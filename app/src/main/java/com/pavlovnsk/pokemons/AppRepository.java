@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.pavlovnsk.pokemons.POJO.PokemonItem;
 import com.pavlovnsk.pokemons.POJO.PokemonList;
 import com.pavlovnsk.pokemons.POJO.Result;
+import com.pavlovnsk.pokemons.POJO.Sprites;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class AppRepository {
 
     private Context context;
     private MutableLiveData<List<Result>> pokemonList = new MutableLiveData<>();
+    private MutableLiveData<PokemonItem> pokemonItem = new MutableLiveData<>();
 
     private JSONPlaceHolderApi jsonPlaceHolderApi;
 
@@ -42,5 +44,21 @@ public class AppRepository {
             }
         });
         return pokemonList;
+    }
+
+    public MutableLiveData<PokemonItem> getPokemonItem (int pokemonNumber){
+        jsonPlaceHolderApi.getPokemonItem(pokemonNumber).enqueue(new Callback<PokemonItem>() {
+            @Override
+            public void onResponse(Call<PokemonItem> call, Response<PokemonItem> response) {
+                pokemonItem.setValue(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<PokemonItem> call, Throwable t) {
+                Toast.makeText(context, "Error occurred while getting request!", Toast.LENGTH_SHORT).show();
+                t.printStackTrace();
+            }
+        });
+        return pokemonItem;
     }
 }

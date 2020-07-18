@@ -6,11 +6,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pavlovnsk.pokemons.POJO.PokemonList;
+import com.pavlovnsk.pokemons.POJO.PokemonItem;
 import com.pavlovnsk.pokemons.POJO.Result;
 import com.squareup.picasso.Picasso;
 
@@ -20,8 +21,6 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 class PokemonRecyclerViewAdapter extends RecyclerView.Adapter<PokemonRecyclerViewAdapter.PokemonViewHolder> {
 
@@ -32,11 +31,13 @@ class PokemonRecyclerViewAdapter extends RecyclerView.Adapter<PokemonRecyclerVie
     private Context context;
     private List<Result> pokemonList;
     private OnItemMovieClickListener onItemMovieClickListener;
+    private PokemonViewModel pokemonViewModel;
 
-    public PokemonRecyclerViewAdapter(Context context, OnItemMovieClickListener onItemMovieClickListener) {
+    public PokemonRecyclerViewAdapter(Context context, OnItemMovieClickListener onItemMovieClickListener, PokemonViewModel pokemonViewModel) {
         this.context = context;
         pokemonList = new ArrayList<>();
         this.onItemMovieClickListener = onItemMovieClickListener;
+        this.pokemonViewModel = pokemonViewModel;
     }
 
     public void setPokemonList(List<Result> pokemonList) {
@@ -64,7 +65,7 @@ class PokemonRecyclerViewAdapter extends RecyclerView.Adapter<PokemonRecyclerVie
         return pokemonList;
     }
 
-    public static class PokemonViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class PokemonViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView posterImageView;
         private TextView nameTextView;
@@ -86,7 +87,23 @@ class PokemonRecyclerViewAdapter extends RecyclerView.Adapter<PokemonRecyclerVie
 
         private void bind(final Result pokemon) {
             nameTextView.setText(pokemon.getName());
-           // Picasso.get().load(pokemon.getPoster()).fit().centerInside().into(posterImageView);
+
+            String url = pokemon.getUrl();
+            String[] s = url.split("/");
+            int pokemonNumber = Integer.parseInt(s[s.length-1]);
+
+            App.getJSONPlaceHolderApi().getPokemonItem(pokemonNumber).enqueue(new Callback<PokemonItem>() {
+                @Override
+                public void onResponse(Call<PokemonItem> call, Response<PokemonItem> response) {
+                    Picasso.get().load(response.body().getSprites().getBackDefault()).fit().centerInside().into(posterImageView);
+                }
+
+                @Override
+                public void onFailure(Call<PokemonItem> call, Throwable t) {
+                    Toast.makeText(context, "Error occurred while getting request!", Toast.LENGTH_SHORT).show();
+                    t.printStackTrace();
+                }
+            });
         }
     }
 }

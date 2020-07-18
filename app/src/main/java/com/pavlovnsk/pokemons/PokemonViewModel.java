@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
+import com.pavlovnsk.pokemons.POJO.PokemonItem;
 import com.pavlovnsk.pokemons.POJO.Result;
 
 import java.util.List;
@@ -21,5 +22,9 @@ public class PokemonViewModel extends AndroidViewModel {
 
     public MutableLiveData<List<Result>> getPokemonList(int limit, int offset) {
         return appRepository.getPokemonList(limit, offset);
+    }
+
+    public MutableLiveData<PokemonItem> getPokemonItem (int pokemonNumber){
+        return appRepository.getPokemonItem(pokemonNumber);
     }
 }

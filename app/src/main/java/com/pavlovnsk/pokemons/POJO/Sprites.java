@@ -3,7 +3,7 @@ package com.pavlovnsk.pokemons.POJO;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-class Sprites {
+public class Sprites {
     @SerializedName("back_default")
     @Expose
     private String backDefault;

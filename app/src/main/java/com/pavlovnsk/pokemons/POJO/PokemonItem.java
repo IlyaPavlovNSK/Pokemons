@@ -50,10 +50,10 @@ public class PokemonItem {
     private Sprites sprites;
     @SerializedName("stats")
     @Expose
-    private List<Object> stats = null;
+    private List<Stat> stats = null;
     @SerializedName("types")
     @Expose
-    private List<Object> types = null;
+    private List<Type> types = null;
     @SerializedName("weight")
     @Expose
     private Integer weight;
@@ -170,19 +170,19 @@ public class PokemonItem {
         this.sprites = sprites;
     }
 
-    public List<Object> getStats() {
+    public List<Stat> getStats() {
         return stats;
     }
 
-    public void setStats(List<Object> stats) {
+    public void setStats(List<Stat> stats) {
         this.stats = stats;
     }
 
-    public List<Object> getTypes() {
+    public List<Type> getTypes() {
         return types;
     }
 
-    public void setTypes(List<Object> types) {
+    public void setTypes(List<Type> types) {
         this.types = types;
     }
 

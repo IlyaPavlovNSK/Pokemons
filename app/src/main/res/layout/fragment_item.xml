@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/IV_poster_item"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/TV_height"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        android:text="@string/height"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/IV_poster_item" />
+
+    <TextView
+        android:id="@+id/TV_weight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        android:text="@string/weight"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/TV_height" />
+
+    <TextView
+        android:id="@+id/TV_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        android:text="@string/type"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/TV_weight" />
+
+    <TextView
+        android:id="@+id/TV_attack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        android:text="@string/attack"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/TV_type" />
+
+    <TextView
+        android:id="@+id/TV_defense"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        android:text="@string/defense"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/TV_attack" />
+
+    <TextView
+        android:id="@+id/TV_hp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        android:text="@string/hp"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/TV_defense" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="TV_height, TV_weight, TV_type, TV_attack, TV_defense, TV_hp" />
+
+    <TextView
+        android:id="@+id/TV_height_stats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        tool:text="40"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/IV_poster_item" />
+
+    <TextView
+        android:id="@+id/TV_weight_stats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        tool:text="35"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/TV_height" />
+
+    <TextView
+        android:id="@+id/TV_type_stats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        tool:text="bird"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/TV_weight" />
+
+    <TextView
+        android:id="@+id/TV_attack_stats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        tool:text="100"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/TV_type" />
+
+    <TextView
+        android:id="@+id/TV_defense_stats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        tool:text="50"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/TV_attack" />
+
+    <TextView
+        android:id="@+id/TV_hp_stats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        tool:text="1000"
+        android:textSize="@dimen/items_text_size"
+        app:layout_constraintStart_toStartOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/TV_defense" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

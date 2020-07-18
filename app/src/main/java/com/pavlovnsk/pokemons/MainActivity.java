@@ -12,43 +12,13 @@ import com.pavlovnsk.pokemons.POJO.Result;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements PokemonRecyclerViewAdapter.OnItemMovieClickListener {
-
-    private RecyclerView pokemonRecyclerView;
-    private PokemonRecyclerViewAdapter pokemonRecyclerViewAdapter;
-    private RecyclerView.LayoutManager layoutManager;
-    private PokemonViewModel pokemonViewModel;
+public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        pokemonViewModel = new ViewModelProvider.AndroidViewModelFactory(getApplication()).create(PokemonViewModel.class);
-
-        layoutManager = new LinearLayoutManager(this);
-        pokemonRecyclerView = findViewById(R.id.RV_pokemon_list);
-        pokemonRecyclerViewAdapter = new PokemonRecyclerViewAdapter(this, this);
-
-        pokemonRecyclerView.setAdapter(pokemonRecyclerViewAdapter);
-        pokemonRecyclerView.setLayoutManager(layoutManager);
-        pokemonRecyclerView.setHasFixedSize(true);
-
-        observeViewModel();
-    }
-
-    private void observeViewModel() {
-        pokemonViewModel.getPokemonList(60, 0).observe(this, new Observer<List<Result>>() {
-            @Override
-            public void onChanged(List<Result> pokemonList) {
-                pokemonRecyclerViewAdapter.setPokemonList(pokemonList);
-                pokemonRecyclerViewAdapter.notifyDataSetChanged();
-            }
-        });
-    }
-
-    @Override
-    public void onItemClick(int position) {
-
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ListFragment()).commit();
     }
 }
