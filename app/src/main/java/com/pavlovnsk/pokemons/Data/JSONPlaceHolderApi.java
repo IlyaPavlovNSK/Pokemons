@@ -1,4 +1,4 @@
-package com.pavlovnsk.pokemons;
+package com.pavlovnsk.pokemons.Data;
 
 import com.pavlovnsk.pokemons.POJO.PokemonItem;
 import com.pavlovnsk.pokemons.POJO.PokemonList;

@@ -1,4 +1,4 @@
-package com.pavlovnsk.pokemons;
+package com.pavlovnsk.pokemons.Fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.pavlovnsk.pokemons.R;
 import com.squareup.picasso.Picasso;
 
 public class ItemFragment extends Fragment {

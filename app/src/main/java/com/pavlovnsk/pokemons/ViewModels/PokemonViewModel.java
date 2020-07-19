@@ -1,4 +1,4 @@
-package com.pavlovnsk.pokemons;
+package com.pavlovnsk.pokemons.ViewModels;
 
 import android.app.Application;
 
@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
+import com.pavlovnsk.pokemons.Data.AppRepository;
 import com.pavlovnsk.pokemons.POJO.PokemonItem;
 import com.pavlovnsk.pokemons.POJO.Result;
 

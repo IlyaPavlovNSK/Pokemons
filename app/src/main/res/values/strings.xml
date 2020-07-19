@@ -6,4 +6,6 @@
     <string name="type">type</string>
     <string name="weight">weight</string>
     <string name="height">height</string>
+    <string name="click_again_to_exit">click again to exit</string>
+    <string name="update">update</string>
 </resources>

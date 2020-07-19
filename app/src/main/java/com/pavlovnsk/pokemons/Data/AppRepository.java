@@ -1,15 +1,15 @@
-package com.pavlovnsk.pokemons;
+package com.pavlovnsk.pokemons.Data;
 
 import android.content.Context;
-import android.graphics.Movie;
 import android.widget.Toast;
 
 import androidx.lifecycle.MutableLiveData;
 
+import com.pavlovnsk.pokemons.App;
 import com.pavlovnsk.pokemons.POJO.PokemonItem;
 import com.pavlovnsk.pokemons.POJO.PokemonList;
 import com.pavlovnsk.pokemons.POJO.Result;
-import com.pavlovnsk.pokemons.POJO.Sprites;
+import com.pavlovnsk.pokemons.Utils;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import retrofit2.Response;
 public class AppRepository {
 
     private Context context;
-    private MutableLiveData<List<Result>> pokemonList = new MutableLiveData<>();
+    private MutableLiveData<List<Result>> pokemonList;
     private MutableLiveData<PokemonItem> pokemonItem = new MutableLiveData<>();
 
     private JSONPlaceHolderApi jsonPlaceHolderApi;
@@ -31,10 +31,12 @@ public class AppRepository {
     }
 
     public MutableLiveData<List<Result>> getPokemonList(int limit, int offset) {
+        pokemonList = new MutableLiveData<>();
         jsonPlaceHolderApi.getPokemonList(limit, offset).enqueue(new Callback<PokemonList>() {
             @Override
             public void onResponse(Call<PokemonList> call, Response<PokemonList> response) {
                 pokemonList.setValue(response.body().getResults());
+                Utils.count = response.body().getCount();
             }
 
             @Override

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottom_sheet"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimary"
+    android:orientation="vertical"
+    app:behavior_hideable="true"
+    app:behavior_peekHeight="40dp"
+    app:layout_behavior="@string/bottom_sheet_behavior">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        android:layout_gravity="center"
+        android:src="@drawable/up_white"/>
+
+    <CheckBox
+        android:id="@+id/CB_attack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/attack"
+        android:textSize="@dimen/items_text_size"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"/>
+
+    <CheckBox
+        android:id="@+id/CB_defense"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/defense"
+        android:textSize="@dimen/items_text_size"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"/>
+
+    <CheckBox
+        android:id="@+id/CB_hp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hp"
+        android:textSize="@dimen/items_text_size"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"/>
+
+    <Button
+        android:id="@+id/B_update"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/bottom_padding"
+        android:text="@string/update"
+        android:background="@color/colorAccent"
+        android:textSize="@dimen/items_text_size"
+        android:layout_marginStart="@dimen/text_margin_start"
+        android:layout_marginTop="@dimen/text_margin_top"
+        android:layout_marginBottom="@dimen/text_margin_bottom"/>
+</LinearLayout>

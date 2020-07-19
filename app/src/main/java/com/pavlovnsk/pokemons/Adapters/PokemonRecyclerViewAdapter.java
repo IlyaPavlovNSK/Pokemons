@@ -1,4 +1,4 @@
-package com.pavlovnsk.pokemons;
+package com.pavlovnsk.pokemons.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,8 +11,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.pavlovnsk.pokemons.App;
 import com.pavlovnsk.pokemons.POJO.PokemonItem;
 import com.pavlovnsk.pokemons.POJO.Result;
+import com.pavlovnsk.pokemons.ViewModels.PokemonViewModel;
+import com.pavlovnsk.pokemons.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -22,7 +25,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-class PokemonRecyclerViewAdapter extends RecyclerView.Adapter<PokemonRecyclerViewAdapter.PokemonViewHolder> {
+public class PokemonRecyclerViewAdapter extends RecyclerView.Adapter<PokemonRecyclerViewAdapter.PokemonViewHolder> {
 
     public interface OnItemMovieClickListener {
         void onItemClick(int position);
