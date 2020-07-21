@@ -1,10 +1,10 @@
 package com.pavlovnsk.pokemons.Fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,41 +14,41 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pavlovnsk.pokemons.App;
-import com.pavlovnsk.pokemons.POJO.PokemonItem;
-import com.pavlovnsk.pokemons.POJO.Result;
-import com.pavlovnsk.pokemons.POJO.Stat;
-import com.pavlovnsk.pokemons.POJO.Type;
-import com.pavlovnsk.pokemons.POJO.Type_;
 import com.pavlovnsk.pokemons.Adapters.PokemonRecyclerViewAdapter;
-import com.pavlovnsk.pokemons.ViewModels.PokemonViewModel;
+import com.pavlovnsk.pokemons.POJO.PokemonParameters;
 import com.pavlovnsk.pokemons.R;
+import com.pavlovnsk.pokemons.Utils;
+import com.pavlovnsk.pokemons.ViewModels.PokemonViewModel;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter.OnItemMovieClickListener {
+public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter.OnItemPokemonClickListener {
 
     private RecyclerView pokemonRecyclerView;
     private PokemonRecyclerViewAdapter pokemonRecyclerViewAdapter;
     private LinearLayoutManager layoutManager;
     private PokemonViewModel pokemonViewModel;
-    private ItemOnClickListListener itemOnClickListListener = null;
+    private ItemOnClickListListener itemOnClickListListener;
 
-    private int offset = 0;
     private boolean loading = true;
     int firstVisibleItem, visibleItemCount, totalItemCount;
-    private int limit = 5;
 
-    private Hashtable<Result, List<Stat>> detailsPokemon;
+    private int offset = 0;
+    private int limit = 5;
 
     public interface ItemOnClickListListener {
         void onItemClick(int pokemonNumber);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        pokemonViewModel = new ViewModelProvider(requireActivity()).get(PokemonViewModel.class);
+
+        pokemonRecyclerViewAdapter = new PokemonRecyclerViewAdapter(getActivity(), this);
+        pokemonRecyclerViewAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+
+        observeViewModel();
     }
 
     @Nullable
@@ -64,14 +64,18 @@ public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter
         pokemonRecyclerView.setLayoutManager(layoutManager);
         pokemonRecyclerView.setHasFixedSize(true);
 
+        if (layoutManager.getItemCount() < 0) {
+            getPokemonParametersFromWeb(limit, offset);
+        }
+
         pokemonRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
                 visibleItemCount = pokemonRecyclerView.getChildCount(); //кол-во видимых элементов
-                totalItemCount = layoutManager.getItemCount(); // кол-во элементов всписке
-                firstVisibleItem = layoutManager.findFirstVisibleItemPosition(); // позиция первого видимого элемента
+                totalItemCount = layoutManager.getItemCount() + Utils.addCount; // кол-во элементов всписке с учетом сдвига
+                firstVisibleItem = layoutManager.findFirstVisibleItemPosition() + Utils.addCount; // позиция первого видимого элемента с учетом сдвига
 
                 if (loading) {
                     if (totalItemCount > offset) {
@@ -80,7 +84,10 @@ public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter
                     }
                 }
                 if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + limit)) {
-                    observeViewModel(limit, totalItemCount);
+
+                    if (pokemonViewModel.getPokemonParametersFromBd().getValue() == null) {
+                        getPokemonParametersFromWeb(limit, totalItemCount);
+                    }
                     loading = true;
                 }
             }
@@ -88,47 +95,17 @@ public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter
         return view;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        detailsPokemon = new Hashtable<>();
-
-        pokemonViewModel = new ViewModelProvider.AndroidViewModelFactory(getActivity().getApplication()).create(PokemonViewModel.class);
-        pokemonRecyclerViewAdapter = new PokemonRecyclerViewAdapter(getContext(), this, pokemonViewModel);
-        pokemonRecyclerViewAdapter.notifyDataSetChanged();
-
-        observeViewModel(limit, offset);
+    public void getPokemonParametersFromWeb(int limit, int totalItemCount) {
+        pokemonViewModel.getPokemonParametersFromWeb(limit, totalItemCount);
     }
 
-    public PokemonRecyclerViewAdapter getPokemonRecyclerViewAdapter() {
-        return pokemonRecyclerViewAdapter;
-    }
-
-    public Hashtable<Result, List<Stat>> getDetailsPokemon() {
-        return detailsPokemon;
-    }
-
-    public RecyclerView getPokemonRecyclerView() {
-        return pokemonRecyclerView;
-    }
-
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
-    public int getLimit() {
-        return limit;
-    }
-
-    public void observeViewModel(int l, int o) {
-        pokemonViewModel.getPokemonList(l, o).observe(this, new Observer<List<Result>>() {
+    public void observeViewModel() {
+        pokemonViewModel.getPokemonParametersFromBd().observe(this, new Observer<List<PokemonParameters>>() {
             @Override
-            public void onChanged(List<Result> pokemonList) {
-                pokemonRecyclerViewAdapter.getPokemonList().addAll(pokemonList);
-                pokemonRecyclerViewAdapter.notifyItemRangeInserted(totalItemCount, limit);
-
-                for (int i = 0; i < pokemonList.size(); i++) {
-                    detailsPokemon.put(pokemonList.get(i), loadStats(getPokemonNumber(pokemonList.get(i))));
+            public void onChanged(List<PokemonParameters> pokemonList) {
+                if (pokemonList != null) {
+                    pokemonRecyclerViewAdapter.setPokemonList(pokemonList);
+                    pokemonRecyclerViewAdapter.notifyItemRangeInserted(totalItemCount, limit);
                 }
             }
         });
@@ -140,83 +117,29 @@ public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter
 
     @Override
     public void onItemClick(int position) {
-        Result pokemon = pokemonRecyclerViewAdapter.getPokemonList().get(position);
+        PokemonParameters pokemon = pokemonRecyclerViewAdapter.getPokemonList().get(position);
         if (itemOnClickListListener != null) {
-            itemOnClickListListener.onItemClick(getPokemonNumber(pokemon));
+            itemOnClickListListener.onItemClick(pokemon.getPokemonNumber());
         }
     }
 
-    public int getPokemonNumber(Result pokemon) {
-        String url = pokemon.getUrl();
-        String[] s = url.split("/");
-        return Integer.parseInt(s[s.length - 1]);
+    public RecyclerView getPokemonRecyclerView() {
+        return pokemonRecyclerView;
     }
 
-
-
-    public List<Stat> loadStats(int pokemonNumber) {
-        List<Stat> stats = new ArrayList<>();
-        App.getJSONPlaceHolderApi().getPokemonItem(pokemonNumber).enqueue(new Callback<PokemonItem>() {
-            @Override
-            public void onResponse(Call<PokemonItem> call, Response<PokemonItem> response) {
-                stats.addAll(response.body().getStats());
-            }
-
-            @Override
-            public void onFailure(Call<PokemonItem> call, Throwable t) {
-                Toast.makeText(getContext(), "Error occurred while getting request!", Toast.LENGTH_SHORT).show();
-                t.printStackTrace();
-            }
-        });
-        return stats;
+    public PokemonViewModel getPokemonViewModel() {
+        return pokemonViewModel;
     }
 
-    public void loadPokemonParameters(int pokemonNumber, final ItemFragment itemFragment) {
-        App.getJSONPlaceHolderApi().getPokemonItem(pokemonNumber).enqueue(new Callback<PokemonItem>() {
-            @Override
-            public void onResponse(Call<PokemonItem> call, Response<PokemonItem> response) {
+    public PokemonRecyclerViewAdapter getPokemonRecyclerViewAdapter() {
+        return pokemonRecyclerViewAdapter;
+    }
 
-                int heightStats = response.body().getHeight();
-                int weightStats = response.body().getWeight();
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
 
-                StringBuilder types = new StringBuilder();
-                List<Type> typeStats = response.body().getTypes();
-                for (int i = 0; i < typeStats.size(); i++) {
-                    Type type = typeStats.get(i);
-                    Type_ type_ = type.getType();
-
-                    types.append(type_.getName()).append(" ");
-                }
-
-                int attackStats = 0;
-                int defenseStats = 0;
-                int hpStats = 0;
-                List<Stat> stats = response.body().getStats();
-                for (int i = 0; i < stats.size(); i++) {
-                    Stat stat = stats.get(i);
-
-                    switch (i) {
-                        case 0:
-                            hpStats = stat.getBaseStat();
-                            break;
-                        case 1:
-                            attackStats = stat.getBaseStat();
-                            break;
-                        case 2:
-                            defenseStats = stat.getBaseStat();
-                            break;
-                    }
-                }
-
-                String poster = response.body().getSprites().getBackDefault();
-                itemFragment.bind(poster, heightStats, weightStats, types.toString().trim(), attackStats, defenseStats, hpStats);
-            }
-
-            @Override
-            public void onFailure(Call<PokemonItem> call, Throwable t) {
-                Toast.makeText(getContext(), "Error occurred while getting request!", Toast.LENGTH_SHORT).show();
-                t.printStackTrace();
-            }
-        });
+    public int getLimit() {
+        return limit;
     }
 }

@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase;
 
 import com.pavlovnsk.pokemons.POJO.PokemonParameters;
 
-@Database(entities = {PokemonParameters.class}, version = 1)
+@Database(entities = {PokemonParameters.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract PokemonParametersDao pokemonParametersDao();
 }

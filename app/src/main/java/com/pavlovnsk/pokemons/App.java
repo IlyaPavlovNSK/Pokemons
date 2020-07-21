@@ -28,7 +28,10 @@ public class App extends Application {
 
         jsonPlaceHolderApi = mRetrofit.create(JSONPlaceHolderApi.class);
 
-        db =  Room.databaseBuilder(this, AppDatabase.class, "database").build();
+        db =  Room.databaseBuilder(this, AppDatabase.class, "database")
+                .fallbackToDestructiveMigration()
+               // .allowMainThreadQueries()
+                .build();
     }
 
     public static JSONPlaceHolderApi getJSONPlaceHolderApi() {

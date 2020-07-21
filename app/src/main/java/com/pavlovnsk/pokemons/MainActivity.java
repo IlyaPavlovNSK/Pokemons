@@ -16,10 +16,10 @@ import androidx.fragment.app.FragmentManager;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.pavlovnsk.pokemons.Fragments.ItemFragment;
 import com.pavlovnsk.pokemons.Fragments.ListFragment;
-import com.pavlovnsk.pokemons.POJO.Result;
+import com.pavlovnsk.pokemons.POJO.PokemonParameters;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ListFragment.ItemOnClickListListener, View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
@@ -89,19 +89,18 @@ public class MainActivity extends AppCompatActivity implements ListFragment.Item
 
     @Override
     public void onItemClick(int pokemonNumber) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("pokemonNumber", pokemonNumber);
         ItemFragment itemFragment = new ItemFragment();
+        itemFragment.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, itemFragment).addToBackStack(null).commit();
-
-        listFragment.loadPokemonParameters(pokemonNumber, itemFragment);
     }
 
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        switch (id) {
-            case R.id.B_update:
-                updateList();
-                break;
+        if (id == R.id.B_update) {
+            updateList();
         }
     }
 
@@ -130,41 +129,45 @@ public class MainActivity extends AppCompatActivity implements ListFragment.Item
     }
 
     private void updateList() {
+        hpCheckBox.setChecked(false);
+        defenseCheckBox.setChecked(false);
+        attackCheckBox.setChecked(false);
         listFragment.getPokemonRecyclerViewAdapter().getPokemonList().clear();
-        listFragment.getDetailsPokemon().clear();
-        int itemCount = Utils.count-listFragment.getLimit()-1;
-        int randomItem = (int) (Math.random()*++itemCount);
-        listFragment.observeViewModel(listFragment.getLimit(), randomItem);
+        listFragment.getPokemonViewModel().deleteAllParameters();
+        int itemCount = Utils.count - listFragment.getLimit() - 1;
+        int randomItem = (int) (Math.random() * ++itemCount);
+        Utils.addCount = randomItem;
+        listFragment.getPokemonParametersFromWeb(listFragment.getLimit(), randomItem);
         listFragment.getPokemonRecyclerViewAdapter().notifyDataSetChanged();
-        listFragment.setOffset(0);
+        listFragment.setOffset(randomItem);
     }
 
     private void showMaxAttack() {
-        Result result = Collections.max(listFragment.getDetailsPokemon().entrySet(), (e1, e2) -> e1.getValue().get(1).getBaseStat() - e2.getValue().get(1).getBaseStat()).getKey();
-        ArrayList<Result> results = (ArrayList<Result>) listFragment.getPokemonRecyclerViewAdapter().getPokemonList();
-        int i = results.indexOf(result);
-        Result item = results.remove(i);
-        results.add(0, item);
+        PokemonParameters pokemonParameter = Collections.max(listFragment.getPokemonRecyclerViewAdapter().getPokemonList(), (e1, e2) -> e1.getAttackStats() - e2.getAttackStats());
+        List<PokemonParameters> pokemonParameters = listFragment.getPokemonRecyclerViewAdapter().getPokemonList();
+        int i = pokemonParameters.indexOf(pokemonParameter);
+        PokemonParameters item = pokemonParameters.remove(i);
+        pokemonParameters.add(0, item);
         listFragment.getPokemonRecyclerViewAdapter().notifyDataSetChanged();
         listFragment.getPokemonRecyclerView().smoothScrollToPosition(0);
     }
 
     private void showMaxHp() {
-        Result result = Collections.max(listFragment.getDetailsPokemon().entrySet(), (e1, e2) -> e1.getValue().get(0).getBaseStat() - e2.getValue().get(0).getBaseStat()).getKey();
-        ArrayList<Result> results = (ArrayList<Result>) listFragment.getPokemonRecyclerViewAdapter().getPokemonList();
-        int i = results.indexOf(result);
-        Result item = results.remove(i);
-        results.add(0, item);
+        PokemonParameters pokemonParameter = Collections.max(listFragment.getPokemonRecyclerViewAdapter().getPokemonList(), (e1, e2) -> e1.getHpStats() - e2.getHpStats());
+        List<PokemonParameters> pokemonParameters = listFragment.getPokemonRecyclerViewAdapter().getPokemonList();
+        int i = pokemonParameters.indexOf(pokemonParameter);
+        PokemonParameters item = pokemonParameters.remove(i);
+        pokemonParameters.add(0, item);
         listFragment.getPokemonRecyclerViewAdapter().notifyDataSetChanged();
         listFragment.getPokemonRecyclerView().smoothScrollToPosition(0);
     }
 
     private void showMaxDefense() {
-        Result result = Collections.max(listFragment.getDetailsPokemon().entrySet(), (e1, e2) -> e1.getValue().get(2).getBaseStat() - e2.getValue().get(2).getBaseStat()).getKey();
-        ArrayList<Result> results = (ArrayList<Result>) listFragment.getPokemonRecyclerViewAdapter().getPokemonList();
-        int i = results.indexOf(result);
-        Result item = results.remove(i);
-        results.add(0, item);
+        PokemonParameters pokemonParameter = Collections.max(listFragment.getPokemonRecyclerViewAdapter().getPokemonList(), (e1, e2) -> e1.getDefenseStats() - e2.getDefenseStats());
+        List<PokemonParameters> pokemonParameters = listFragment.getPokemonRecyclerViewAdapter().getPokemonList();
+        int i = pokemonParameters.indexOf(pokemonParameter);
+        PokemonParameters item = pokemonParameters.remove(i);
+        pokemonParameters.add(0, item);
         listFragment.getPokemonRecyclerViewAdapter().notifyDataSetChanged();
         listFragment.getPokemonRecyclerView().smoothScrollToPosition(0);
     }

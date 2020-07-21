@@ -8,6 +8,7 @@ public class PokemonParameters {
 
     @PrimaryKey
     private int pokemonNumber;
+    private String pokemonName;
     private int attackStats;
     private int defenseStats;
     private int hpStats;
@@ -16,7 +17,8 @@ public class PokemonParameters {
     private String types;
     private String poster;
 
-    public PokemonParameters(int pokemonNumber, int attackStats, int defenseStats, int hpStats, int heightStats, int weightStats, String types, String poster) {
+    public PokemonParameters(String pokemonName, int pokemonNumber, int attackStats, int defenseStats, int hpStats, int heightStats, int weightStats, String types, String poster) {
+        this.pokemonName = pokemonName;
         this.pokemonNumber = pokemonNumber;
         this.attackStats = attackStats;
         this.defenseStats = defenseStats;
@@ -25,6 +27,14 @@ public class PokemonParameters {
         this.weightStats = weightStats;
         this.types = types;
         this.poster = poster;
+    }
+
+    public String getPokemonName() {
+        return pokemonName;
+    }
+
+    public void setPokemonName(String pokemonName) {
+        this.pokemonName = pokemonName;
     }
 
     public int getPokemonNumber() {
