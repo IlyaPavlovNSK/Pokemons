@@ -73,6 +73,14 @@ public class MainActivity extends AppCompatActivity implements ListFragment.Item
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        hpCheckBox.setChecked(false);
+        defenseCheckBox.setChecked(false);
+        attackCheckBox.setChecked(false);
+    }
+
+    @Override
     public void onBackPressed() {
         getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
@@ -132,43 +140,38 @@ public class MainActivity extends AppCompatActivity implements ListFragment.Item
         hpCheckBox.setChecked(false);
         defenseCheckBox.setChecked(false);
         attackCheckBox.setChecked(false);
-        listFragment.getPokemonRecyclerViewAdapter().getPokemonList().clear();
         listFragment.getPokemonViewModel().deleteAllParameters();
-        int itemCount = Utils.count - listFragment.getLimit() - 1;
-        int randomItem = (int) (Math.random() * ++itemCount);
+        int itemCount = Utils.count - listFragment.getLimit();
+        int randomItem = (int) (Math.random() * itemCount);
         Utils.addCount = randomItem;
         listFragment.getPokemonParametersFromWeb(listFragment.getLimit(), randomItem);
-        listFragment.getPokemonRecyclerViewAdapter().notifyDataSetChanged();
         listFragment.setOffset(randomItem);
     }
 
     private void showMaxAttack() {
-        PokemonParameters pokemonParameter = Collections.max(listFragment.getPokemonRecyclerViewAdapter().getPokemonList(), (e1, e2) -> e1.getAttackStats() - e2.getAttackStats());
-        List<PokemonParameters> pokemonParameters = listFragment.getPokemonRecyclerViewAdapter().getPokemonList();
-        int i = pokemonParameters.indexOf(pokemonParameter);
-        PokemonParameters item = pokemonParameters.remove(i);
-        pokemonParameters.add(0, item);
-        listFragment.getPokemonRecyclerViewAdapter().notifyDataSetChanged();
-        listFragment.getPokemonRecyclerView().smoothScrollToPosition(0);
+        List<PokemonParameters> list = listFragment.getPokemonPagedListAdapter().getCurrentList();
+        if(list!=null){
+            PokemonParameters targetPokemonParameter = Collections.max(list, (e1, e2) -> e1.getAttackStats() - e2.getAttackStats());
+            int id = listFragment.getPokemonPagedListAdapter().getCurrentList().snapshot().indexOf(targetPokemonParameter);
+            listFragment.getPokemonRecyclerView().smoothScrollToPosition(id);
+        }
     }
 
     private void showMaxHp() {
-        PokemonParameters pokemonParameter = Collections.max(listFragment.getPokemonRecyclerViewAdapter().getPokemonList(), (e1, e2) -> e1.getHpStats() - e2.getHpStats());
-        List<PokemonParameters> pokemonParameters = listFragment.getPokemonRecyclerViewAdapter().getPokemonList();
-        int i = pokemonParameters.indexOf(pokemonParameter);
-        PokemonParameters item = pokemonParameters.remove(i);
-        pokemonParameters.add(0, item);
-        listFragment.getPokemonRecyclerViewAdapter().notifyDataSetChanged();
-        listFragment.getPokemonRecyclerView().smoothScrollToPosition(0);
+        List<PokemonParameters> list = listFragment.getPokemonPagedListAdapter().getCurrentList();
+        if(list!=null){
+            PokemonParameters targetPokemonParameter = Collections.max(list, (e1, e2) -> e1.getHpStats() - e2.getHpStats());
+            int id = listFragment.getPokemonPagedListAdapter().getCurrentList().snapshot().indexOf(targetPokemonParameter);
+            listFragment.getPokemonRecyclerView().smoothScrollToPosition(id);
+        }
     }
 
     private void showMaxDefense() {
-        PokemonParameters pokemonParameter = Collections.max(listFragment.getPokemonRecyclerViewAdapter().getPokemonList(), (e1, e2) -> e1.getDefenseStats() - e2.getDefenseStats());
-        List<PokemonParameters> pokemonParameters = listFragment.getPokemonRecyclerViewAdapter().getPokemonList();
-        int i = pokemonParameters.indexOf(pokemonParameter);
-        PokemonParameters item = pokemonParameters.remove(i);
-        pokemonParameters.add(0, item);
-        listFragment.getPokemonRecyclerViewAdapter().notifyDataSetChanged();
-        listFragment.getPokemonRecyclerView().smoothScrollToPosition(0);
+        List<PokemonParameters> list = listFragment.getPokemonPagedListAdapter().getCurrentList();
+        if(list!=null){
+            PokemonParameters targetPokemonParameter = Collections.max(list, (e1, e2) -> e1.getDefenseStats() - e2.getDefenseStats());
+            int id = listFragment.getPokemonPagedListAdapter().getCurrentList().snapshot().indexOf(targetPokemonParameter);
+            listFragment.getPokemonRecyclerView().smoothScrollToPosition(id);
+        }
     }
 }

@@ -1,10 +1,10 @@
 package com.pavlovnsk.pokemons.Data;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.paging.DataSource;
 
 import com.pavlovnsk.pokemons.App;
 import com.pavlovnsk.pokemons.POJO.PokemonItem;
@@ -23,37 +23,34 @@ import retrofit2.Response;
 
 public class AppRepository {
 
-    private MutableLiveData<List<Result>> resultList;
-    private LiveData<List<PokemonParameters>> pokemonParametersList;
-
     private JSONPlaceHolderApi jsonPlaceHolderApi;
     private AppDatabase appDatabase;
+    private DataSource.Factory<Integer, PokemonParameters> dataSource;
 
     public AppRepository() {
         jsonPlaceHolderApi = App.getJSONPlaceHolderApi();
         appDatabase = App.getDb();
-
-        resultList = new MutableLiveData<>();
-        pokemonParametersList = new MutableLiveData<>();
     }
 
-    public LiveData<List<PokemonParameters>> getPokemonParametersFromBd() {
-        pokemonParametersList = appDatabase.pokemonParametersDao().getAll();
-        return pokemonParametersList;
+    public DataSource.Factory<Integer, PokemonParameters> getParametersFromBd() {
+        dataSource = appDatabase.pokemonParametersDao().getPokemonList();
+        return dataSource;
     }
 
     public LiveData<PokemonParameters> getPokemonParameterItemFromBd(int pokemonNumber) {
-        return appDatabase.pokemonParametersDao().getById(pokemonNumber);
+        return appDatabase.pokemonParametersDao().getByNumber(pokemonNumber);
+    }
+
+    public void deleteAllParameters() {
+        deletePokemonParametersList();
     }
 
     public void getPokemonParametersFromWeb(int limit, int offset) {
         jsonPlaceHolderApi.getPokemonList(limit, offset).enqueue(new Callback<PokemonList>() {
             @Override
-            public void onResponse(Call<PokemonList> call, Response<PokemonList> response) {
+            public void onResponse(@NonNull Call<PokemonList> call, @NonNull Response<PokemonList> response) {
                 if (response.body() != null) {
                     Utils.count = response.body().getCount();
-
-                    Log.d("TAG", "onResponse: " + "size - " + response.body().getResults().size() + "limit - " + limit + ", offset - " + offset);
 
                     List <Result> results = response.body().getResults();
                     for (int i = 0; i < results.size(); i++) {
@@ -63,7 +60,7 @@ public class AppRepository {
                 }
             }
             @Override
-            public void onFailure(Call<PokemonList> call, Throwable t) {
+            public void onFailure(@NonNull Call<PokemonList> call, @NonNull Throwable t) {
                 t.printStackTrace();
             }
         });
@@ -78,19 +75,20 @@ public class AppRepository {
     private void loadPokemonParameters(int pokemonNumber) {
         jsonPlaceHolderApi.getPokemonItem(pokemonNumber).enqueue(new Callback<PokemonItem>() {
             @Override
-            public void onResponse(Call<PokemonItem> call, Response<PokemonItem> response) {
+            public void onResponse(@NonNull Call<PokemonItem> call,@NonNull Response<PokemonItem> response) {
                 PokemonItem pokemonItem = response.body();
-                insertPokemonParametersList(new PokemonParameters(
-                        pokemonItem.getName(),
-                        pokemonNumber,
-                        pokemonItem.getStats().get(1).getBaseStat(),
-                        pokemonItem.getStats().get(2).getBaseStat(),
-                        pokemonItem.getStats().get(0).getBaseStat(),
-                        pokemonItem.getHeight(),
-                        pokemonItem.getWeight(),
-                        getType(pokemonItem),
-                        pokemonItem.getSprites().getBackDefault()));
-                Log.d("TAG", "onResponse: " + pokemonItem.getName() + " " + pokemonNumber);
+                if (pokemonItem != null) {
+                    insertPokemonParameters(new PokemonParameters(
+                            pokemonItem.getName(),
+                            pokemonNumber,
+                            pokemonItem.getStats().get(1).getBaseStat(),
+                            pokemonItem.getStats().get(2).getBaseStat(),
+                            pokemonItem.getStats().get(0).getBaseStat(),
+                            pokemonItem.getHeight(),
+                            pokemonItem.getWeight(),
+                            getType(pokemonItem),
+                            pokemonItem.getSprites().getBackDefault()));
+                }
             }
 
             private String getType(PokemonItem pokemonItem) {
@@ -105,20 +103,15 @@ public class AppRepository {
             }
 
             @Override
-            public void onFailure(Call<PokemonItem> call, Throwable t) {
+            public void onFailure(@NonNull Call<PokemonItem> call,@NonNull Throwable t) {
                 t.printStackTrace();
             }
         });
     }
 
 
-
-    public void insertPokemonParametersList(PokemonParameters pokemonParametersList) {
-        new AddPokemonParametersListAsyncTask(appDatabase).execute(pokemonParametersList);
-    }
-
-    public void deleteAllParameters() {
-        deletePokemonParametersList();
+    public void insertPokemonParameters(PokemonParameters pokemonParameters) {
+        new AddPokemonParametersListAsyncTask(appDatabase).execute(pokemonParameters);
     }
 
     private static class AddPokemonParametersListAsyncTask extends AsyncTask<PokemonParameters, Void, Void> {
@@ -134,8 +127,6 @@ public class AppRepository {
             return null;
         }
     }
-
-
 
     public void deletePokemonParametersList() {
         new DeletePokemonParametersListAsyncTask(appDatabase).execute();
@@ -154,10 +145,5 @@ public class AppRepository {
             return null;
         }
     }
-
-
-
-
-
 
 }

@@ -1,7 +1,6 @@
 package com.pavlovnsk.pokemons.Fragments;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,32 +8,36 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.DataSource;
+import androidx.paging.LivePagedListBuilder;
+import androidx.paging.PagedList;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pavlovnsk.pokemons.Adapters.PokemonRecyclerViewAdapter;
+import com.pavlovnsk.pokemons.Adapters.PokemonPagedListAdapter;
 import com.pavlovnsk.pokemons.POJO.PokemonParameters;
 import com.pavlovnsk.pokemons.R;
 import com.pavlovnsk.pokemons.Utils;
 import com.pavlovnsk.pokemons.ViewModels.PokemonViewModel;
 
-import java.util.List;
+import java.util.concurrent.Executors;
 
-public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter.OnItemPokemonClickListener {
+public class ListFragment extends Fragment implements com.pavlovnsk.pokemons.Adapters.PokemonPagedListAdapter.PagedListClickListener {
 
     private RecyclerView pokemonRecyclerView;
-    private PokemonRecyclerViewAdapter pokemonRecyclerViewAdapter;
     private LinearLayoutManager layoutManager;
     private PokemonViewModel pokemonViewModel;
     private ItemOnClickListListener itemOnClickListListener;
-
-    private boolean loading = true;
-    int firstVisibleItem, visibleItemCount, totalItemCount;
+    private PokemonPagedListAdapter pokemonPagedListAdapter;
+    private DataSource.Factory<Integer, PokemonParameters> sourceFactory;
+    private LiveData<PagedList<PokemonParameters>> pagedListLiveData;
 
     private int offset = 0;
-    private int limit = 5;
+    private int limit = 30;
 
     public interface ItemOnClickListListener {
         void onItemClick(int pokemonNumber);
@@ -44,11 +47,61 @@ public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         pokemonViewModel = new ViewModelProvider(requireActivity()).get(PokemonViewModel.class);
+        sourceFactory = pokemonViewModel.getParametersFromBd();
 
-        pokemonRecyclerViewAdapter = new PokemonRecyclerViewAdapter(getActivity(), this);
-        pokemonRecyclerViewAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+        if (savedInstanceState != null) {
+            Utils.visiblePosition = savedInstanceState.getInt("position");
+        }
 
-        observeViewModel();
+        // PagedList
+        PagedList.Config config = new PagedList.Config.Builder()
+                .setEnablePlaceholders(false)
+                .setPageSize(limit)
+                .setPrefetchDistance(limit / 2 - 1)
+                .setInitialLoadSizeHint(limit)
+                .build();
+
+        pagedListLiveData = new LivePagedListBuilder<>(sourceFactory, config)
+                .setInitialLoadKey(Utils.visiblePosition)
+                .setFetchExecutor(Executors.newSingleThreadExecutor())
+                .setBoundaryCallback(new PagedList.BoundaryCallback<PokemonParameters>() {
+                    @Override
+                    public void onZeroItemsLoaded() {
+                        super.onZeroItemsLoaded();
+                        getPokemonParametersFromWeb(limit, offset);
+                    }
+
+                    @Override
+                    public void onItemAtEndLoaded(@NonNull PokemonParameters itemAtEnd) {
+                        super.onItemAtEndLoaded(itemAtEnd);
+                        getPokemonParametersFromWeb(limit, offset);
+                        offset = offset + limit;
+                    }
+                })
+                .build();
+
+
+        pokemonPagedListAdapter = new PokemonPagedListAdapter(new DiffUtil.ItemCallback<PokemonParameters>() {
+            @Override
+            public boolean areItemsTheSame(@NonNull PokemonParameters oldItem, @NonNull PokemonParameters newItem) {
+                int oldNumber = oldItem.getId();
+                int newNumber = newItem.getId();
+                return oldNumber == newNumber;
+            }
+
+            @Override
+            public boolean areContentsTheSame(@NonNull PokemonParameters oldItem, @NonNull PokemonParameters newItem) {
+                return oldItem.getPokemonName().equals(newItem.getPokemonName());
+            }
+        }, this);
+
+        pagedListLiveData.observe(this, new Observer<PagedList<PokemonParameters>>() {
+            @Override
+            public void onChanged(PagedList<PokemonParameters> pokemonParameters) {
+                pokemonPagedListAdapter.submitList(pokemonParameters);
+                sourceFactory.create().invalidate();
+            }
+        });
     }
 
     @Nullable
@@ -60,55 +113,24 @@ public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter
 
         layoutManager = new LinearLayoutManager(getContext());
         pokemonRecyclerView = view.findViewById(R.id.RV_pokemon_list);
-        pokemonRecyclerView.setAdapter(pokemonRecyclerViewAdapter);
+        pokemonRecyclerView.setAdapter(pokemonPagedListAdapter);
         pokemonRecyclerView.setLayoutManager(layoutManager);
         pokemonRecyclerView.setHasFixedSize(true);
 
-        if (layoutManager.getItemCount() < 0) {
-            getPokemonParametersFromWeb(limit, offset);
-        }
+        getPokemonRecyclerView().smoothScrollToPosition(Utils.visiblePosition);
 
-        pokemonRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                visibleItemCount = pokemonRecyclerView.getChildCount(); //кол-во видимых элементов
-                totalItemCount = layoutManager.getItemCount() + Utils.addCount; // кол-во элементов всписке с учетом сдвига
-                firstVisibleItem = layoutManager.findFirstVisibleItemPosition() + Utils.addCount; // позиция первого видимого элемента с учетом сдвига
-
-                if (loading) {
-                    if (totalItemCount > offset) {
-                        loading = false;
-                        offset = totalItemCount;
-                    }
-                }
-                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + limit)) {
-
-                    if (pokemonViewModel.getPokemonParametersFromBd().getValue() == null) {
-                        getPokemonParametersFromWeb(limit, totalItemCount);
-                    }
-                    loading = true;
-                }
-            }
-        });
         return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        int p = layoutManager.findFirstVisibleItemPosition();
+        outState.putInt("position", p);
     }
 
     public void getPokemonParametersFromWeb(int limit, int totalItemCount) {
         pokemonViewModel.getPokemonParametersFromWeb(limit, totalItemCount);
-    }
-
-    public void observeViewModel() {
-        pokemonViewModel.getPokemonParametersFromBd().observe(this, new Observer<List<PokemonParameters>>() {
-            @Override
-            public void onChanged(List<PokemonParameters> pokemonList) {
-                if (pokemonList != null) {
-                    pokemonRecyclerViewAdapter.setPokemonList(pokemonList);
-                    pokemonRecyclerViewAdapter.notifyItemRangeInserted(totalItemCount, limit);
-                }
-            }
-        });
     }
 
     public void setOnClickListListener(ItemOnClickListListener onClickListListener) {
@@ -117,7 +139,7 @@ public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter
 
     @Override
     public void onItemClick(int position) {
-        PokemonParameters pokemon = pokemonRecyclerViewAdapter.getPokemonList().get(position);
+        PokemonParameters pokemon = pokemonPagedListAdapter.getCurrentList().get(position);
         if (itemOnClickListListener != null) {
             itemOnClickListListener.onItemClick(pokemon.getPokemonNumber());
         }
@@ -131,8 +153,8 @@ public class ListFragment extends Fragment implements PokemonRecyclerViewAdapter
         return pokemonViewModel;
     }
 
-    public PokemonRecyclerViewAdapter getPokemonRecyclerViewAdapter() {
-        return pokemonRecyclerViewAdapter;
+    public PokemonPagedListAdapter getPokemonPagedListAdapter() {
+        return pokemonPagedListAdapter;
     }
 
     public void setOffset(int offset) {

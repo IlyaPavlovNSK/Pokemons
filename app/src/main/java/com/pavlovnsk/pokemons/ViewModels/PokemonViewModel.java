@@ -5,40 +5,35 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.paging.DataSource;
 
 import com.pavlovnsk.pokemons.Data.AppRepository;
 import com.pavlovnsk.pokemons.POJO.PokemonParameters;
 
-import java.util.List;
-
 public class PokemonViewModel extends AndroidViewModel {
 
     private AppRepository appRepository;
-    private LiveData<List<PokemonParameters>> pokemonParametersList;
-    private LiveData<PokemonParameters> pokemonParameters;
+    private DataSource.Factory<Integer, PokemonParameters> dataSource;
 
     public PokemonViewModel(@NonNull Application application) {
         super(application);
         this.appRepository = new AppRepository();
-        pokemonParametersList = new MutableLiveData<>();
     }
 
-    public void getPokemonParametersFromWeb(int limit, int offset) {
-        appRepository.getPokemonParametersFromWeb(limit, offset);
-    }
-
-    public LiveData<List<PokemonParameters>> getPokemonParametersFromBd() {
-        pokemonParametersList =  appRepository.getPokemonParametersFromBd();
-        return pokemonParametersList;
+    public DataSource.Factory<Integer, PokemonParameters> getParametersFromBd() {
+        dataSource = appRepository.getParametersFromBd();
+        return dataSource;
     }
 
     public LiveData<PokemonParameters> getPokemonParameterItemFromBd(int pokemonNumber) {
-        pokemonParameters = appRepository.getPokemonParameterItemFromBd(pokemonNumber);
-        return pokemonParameters;
+        return appRepository.getPokemonParameterItemFromBd(pokemonNumber);
     }
 
     public void deleteAllParameters() {
         appRepository.deleteAllParameters();
+    }
+
+    public void getPokemonParametersFromWeb(int limit, int offset) {
+        appRepository.getPokemonParametersFromWeb(limit, offset);
     }
 }
