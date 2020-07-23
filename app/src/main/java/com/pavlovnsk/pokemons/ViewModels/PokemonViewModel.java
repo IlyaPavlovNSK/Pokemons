@@ -13,16 +13,14 @@ import com.pavlovnsk.pokemons.POJO.PokemonParameters;
 public class PokemonViewModel extends AndroidViewModel {
 
     private AppRepository appRepository;
-    private DataSource.Factory<Integer, PokemonParameters> dataSource;
 
     public PokemonViewModel(@NonNull Application application) {
         super(application);
         this.appRepository = new AppRepository();
     }
 
-    public DataSource.Factory<Integer, PokemonParameters> getParametersFromBd() {
-        dataSource = appRepository.getParametersFromBd();
-        return dataSource;
+    public DataSource.Factory<Integer, PokemonParameters> getParametersFromBd(String order) {
+        return appRepository.getParametersFromBd(order);
     }
 
     public LiveData<PokemonParameters> getPokemonParameterItemFromBd(int pokemonNumber) {

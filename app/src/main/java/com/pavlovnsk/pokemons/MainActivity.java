@@ -12,14 +12,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.pavlovnsk.pokemons.Fragments.ItemFragment;
 import com.pavlovnsk.pokemons.Fragments.ListFragment;
-import com.pavlovnsk.pokemons.POJO.PokemonParameters;
-
-import java.util.Collections;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ListFragment.ItemOnClickListListener, View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
@@ -56,28 +53,16 @@ public class MainActivity extends AppCompatActivity implements ListFragment.Item
             @Override
             public void onStateChanged(@NonNull final View bottomSheet, int newState) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    bottomSheet.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            BottomSheetBehavior bottomSheetBehavior1 = BottomSheetBehavior.from(bottomSheet);
-                            bottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                        }
+                    bottomSheet.postDelayed(() -> {
+                        BottomSheetBehavior bottomSheetBehavior1 = BottomSheetBehavior.from(bottomSheet);
+                        bottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
                     }, 1500);
                 }
             }
-
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
             }
         });
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        hpCheckBox.setChecked(false);
-        defenseCheckBox.setChecked(false);
-        attackCheckBox.setChecked(false);
     }
 
     @Override
@@ -140,38 +125,34 @@ public class MainActivity extends AppCompatActivity implements ListFragment.Item
         hpCheckBox.setChecked(false);
         defenseCheckBox.setChecked(false);
         attackCheckBox.setChecked(false);
-        listFragment.getPokemonViewModel().deleteAllParameters();
+
         int itemCount = Utils.count - listFragment.getLimit();
         int randomItem = (int) (Math.random() * itemCount);
         Utils.addCount = randomItem;
+
+        listFragment.getPokemonViewModel().deleteAllParameters();
         listFragment.getPokemonParametersFromWeb(listFragment.getLimit(), randomItem);
         listFragment.setOffset(randomItem);
+        goToFirstPosition();
     }
 
     private void showMaxAttack() {
-        List<PokemonParameters> list = listFragment.getPokemonPagedListAdapter().getCurrentList();
-        if(list!=null){
-            PokemonParameters targetPokemonParameter = Collections.max(list, (e1, e2) -> e1.getAttackStats() - e2.getAttackStats());
-            int id = listFragment.getPokemonPagedListAdapter().getCurrentList().snapshot().indexOf(targetPokemonParameter);
-            listFragment.getPokemonRecyclerView().smoothScrollToPosition(id);
-        }
+        listFragment.getSortDataFromBd("attackStats");
+        goToFirstPosition();
     }
 
     private void showMaxHp() {
-        List<PokemonParameters> list = listFragment.getPokemonPagedListAdapter().getCurrentList();
-        if(list!=null){
-            PokemonParameters targetPokemonParameter = Collections.max(list, (e1, e2) -> e1.getHpStats() - e2.getHpStats());
-            int id = listFragment.getPokemonPagedListAdapter().getCurrentList().snapshot().indexOf(targetPokemonParameter);
-            listFragment.getPokemonRecyclerView().smoothScrollToPosition(id);
-        }
+        listFragment.getSortDataFromBd("hpStats");
+        goToFirstPosition();
     }
 
     private void showMaxDefense() {
-        List<PokemonParameters> list = listFragment.getPokemonPagedListAdapter().getCurrentList();
-        if(list!=null){
-            PokemonParameters targetPokemonParameter = Collections.max(list, (e1, e2) -> e1.getDefenseStats() - e2.getDefenseStats());
-            int id = listFragment.getPokemonPagedListAdapter().getCurrentList().snapshot().indexOf(targetPokemonParameter);
-            listFragment.getPokemonRecyclerView().smoothScrollToPosition(id);
-        }
+        listFragment.getSortDataFromBd("defenseStats");
+        goToFirstPosition();
+    }
+
+    private void goToFirstPosition() {
+        listFragment.getPokemonRecyclerView().post(() -> listFragment.getLayoutManager().
+                smoothScrollToPosition(listFragment.getPokemonRecyclerView(), new RecyclerView.State(), 0));
     }
 }

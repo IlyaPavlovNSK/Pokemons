@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey;
 public class PokemonParameters {
 
     @PrimaryKey
-    private  int id;
     private int pokemonNumber;
     private String pokemonName;
     private int attackStats;
@@ -28,15 +27,6 @@ public class PokemonParameters {
         this.weightStats = weightStats;
         this.types = types;
         this.poster = poster;
-        this.id = pokemonNumber;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getPokemonName() {
